@@ -1,0 +1,79 @@
+/* ── University Portal — App-Level Styles ── */
+
+/* Page transition wrapper */
+.page-enter {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Notice card entrance */
+.notice-card {
+  opacity: 0;
+  animation: slideInNotice 0.5s ease-out forwards;
+}
+
+@keyframes slideInNotice {
+  0% { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Stat counter */
+.stat-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Service card icon glow */
+.service-icon {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.service-icon:hover {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  transform: scale(1.08);
+}
+
+/* CTA shimmer button */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-shimmer:hover::after {
+  left: 100%;
+}
+
+/* Input focus glow */
+.input-glow {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-glow:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1), 0 0 20px rgba(212, 175, 55, 0.05);
+}
+
+/* Particle-like dots */
+.floating-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.2);
+  animation: float 6s ease-in-out infinite;
+}

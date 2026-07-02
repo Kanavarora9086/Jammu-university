@@ -1,0 +1,10 @@
+import mongoose from "mongoose";
+import { env } from "./env.js";
+
+export async function connectMongo() {
+  mongoose.set("strictQuery", true);
+  await mongoose.connect(env.MONGODB_URI);
+  console.log("[mongo] connected");
+  console.log(env.MONGODB_URI);
+}
+

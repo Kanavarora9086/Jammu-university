@@ -4,14 +4,25 @@ export default {
   theme: {
     extend: {
       colors: {
+        brand: {
+          primary: "#1d4ed8",
+          secondary: "#0f766e",
+          accent: "#0ea5e9",
+          success: "#16a34a",
+          warning: "#d97706",
+          error: "#dc2626",
+          neutral: "#334155",
+          ink: "#0f172a",
+          paper: "#f8fbff"
+        },
         academic: {
-          navy: "#0f2b5c",
-          navydark: "#07152e",
-          navydeep: "#030a17",
-          gold: "#d4af37",
-          goldhover: "#c39e2c",
-          goldlight: "#e8c94a",
-          cream: "#faf9f6"
+          navy: "#1d4ed8",
+          navydark: "#111827",
+          navydeep: "#06111f",
+          gold: "#0f766e",
+          goldhover: "#115e59",
+          goldlight: "#5eead4",
+          cream: "#f8fafc"
         }
       },
       fontFamily: {

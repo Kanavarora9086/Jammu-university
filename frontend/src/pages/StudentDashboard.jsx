@@ -191,7 +191,7 @@ export function StudentDashboard() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer ${
                   activeTab === tab.id
                     ? "bg-academic-gold text-academic-navy shadow-md shadow-academic-gold/10"
-                    : "text-slate-350 hover:bg-slate-900/60 hover:text-white"
+                    : "text-slate-300 hover:bg-slate-900/60 hover:text-white"
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -253,7 +253,7 @@ export function StudentDashboard() {
 
             <div className="grid md:grid-cols-3 gap-6">
               {/* Profile Card */}
-              <div className="md:col-span-1 bg-slate-950 border border-slate-850 p-6 rounded-2xl flex flex-col items-center text-center shadow-xl">
+              <div className="md:col-span-1 bg-slate-950 border border-slate-800 p-6 rounded-2xl flex flex-col items-center text-center shadow-xl">
                 <div className="relative">
                   <div className="h-28 w-28 rounded-full bg-academic-navy border-2 border-academic-gold flex items-center justify-center font-bold text-5xl text-academic-gold uppercase shadow-2xl">
                     {studentData?.name?.[0] || "S"}
@@ -277,7 +277,7 @@ export function StudentDashboard() {
 
               {/* General details and academic card */}
               <div className="md:col-span-2 space-y-6">
-                <div className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+                <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
                   <h4 className="text-sm font-bold font-serif-academic text-white border-b border-slate-800 pb-3">
                     Contact & Registry Info
                   </h4>
@@ -294,13 +294,13 @@ export function StudentDashboard() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-950 border border-slate-850 p-5 rounded-xl shadow-md">
+                  <div className="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-md">
                     <span className="text-xs text-slate-400 block">Latest Semester SGPA</span>
                     <span className="text-2xl font-extrabold text-academic-gold mt-1 block">
                       {latestResult?.sgpa ?? "—"}
                     </span>
                   </div>
-                  <div className="bg-slate-950 border border-slate-850 p-5 rounded-xl shadow-md">
+                  <div className="bg-slate-950 border border-slate-800 p-5 rounded-xl shadow-md">
                     <span className="text-xs text-slate-400 block">Current Cumulative CGPA</span>
                     <span className="text-2xl font-extrabold text-academic-gold mt-1 block">
                       {latestResult?.cgpa ?? "—"}
@@ -333,7 +333,7 @@ export function StudentDashboard() {
             {studentData?.results && studentData.results.length > 0 ? (
               <div className="space-y-6">
                 {studentData.results.map((r) => (
-                  <div key={r.semester} className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+                  <div key={r.semester} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
                     <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                       <h4 className="font-bold text-lg text-white font-serif-academic">Semester {r.semester}</h4>
                       <div className="text-xs bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
@@ -365,7 +365,7 @@ export function StudentDashboard() {
                             else if (s.marks >= 40) grade = "C";
 
                             return (
-                              <tr key={s.subjectCode} className="border-b border-slate-850/40 text-slate-200">
+                              <tr key={s.subjectCode} className="border-b border-slate-800/40 text-slate-200">
                                 <td className="py-3 pr-4 font-mono font-semibold">{s.subjectCode}</td>
                                 <td className="py-3 pr-4">{s.subjectName}</td>
                                 <td className="py-3 pr-4 text-center">{s.credits}</td>
@@ -381,7 +381,7 @@ export function StudentDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="bg-slate-950 border border-slate-850 p-10 rounded-2xl text-center text-slate-400">
+              <div className="bg-slate-950 border border-slate-800 p-10 rounded-2xl text-center text-slate-400">
                 📭 No examination results published for your roll number yet.
               </div>
             )}
@@ -406,7 +406,7 @@ export function StudentDashboard() {
               <div className="grid md:grid-cols-3 gap-6">
                 
                 {/* Circular statistics card */}
-                <div className="md:col-span-1 bg-slate-950 border border-slate-850 p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-xl">
+                <div className="md:col-span-1 bg-slate-950 border border-slate-800 p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-xl">
                   <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">Cumulative Attendance</h4>
                   
                   {/* Gauge */}
@@ -430,7 +430,7 @@ export function StudentDashboard() {
                     </svg>
                     <div className="absolute text-center">
                       <span className="text-2xl font-extrabold text-white">{overallAttendance}%</span>
-                      <span className="text-[10px] text-slate-450 block">Overall Status</span>
+                      <span className="text-[10px] text-slate-400 block">Overall Status</span>
                     </div>
                   </div>
 
@@ -442,7 +442,7 @@ export function StudentDashboard() {
                 </div>
 
                 {/* Course details progress bars */}
-                <div className="md:col-span-2 bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-6">
+                <div className="md:col-span-2 bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-6">
                   <h4 className="text-sm font-bold font-serif-academic text-white border-b border-slate-800 pb-3">
                     Course-wise Attendance Logs
                   </h4>
@@ -472,7 +472,7 @@ export function StudentDashboard() {
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-950 border border-slate-850 p-10 rounded-2xl text-center text-slate-400">
+              <div className="bg-slate-950 border border-slate-800 p-10 rounded-2xl text-center text-slate-400">
                 📅 Attendance logs have not been registered by course teachers yet.
               </div>
             )}
@@ -498,11 +498,11 @@ export function StudentDashboard() {
                 {assignments.map((asg) => (
                   <div
                     key={asg._id}
-                    className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between gap-6"
+                    className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between gap-6"
                   >
                     <div className="space-y-2 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-900 border border-slate-850 text-slate-405">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-900 border border-slate-800 text-slate-400">
                           {asg.subjectCode}
                         </span>
                         <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase border tracking-wider ${
@@ -518,13 +518,13 @@ export function StudentDashboard() {
                       <h4 className="text-base font-bold text-white">{asg.title}</h4>
                       <p className="text-xs text-slate-400">Course: {asg.subjectName}</p>
                       <p className="text-xs text-slate-500">
-                        Due Date: <span className="font-semibold text-slate-350">{new Date(asg.dueDate).toLocaleDateString()}</span>
+                        Due Date: <span className="font-semibold text-slate-300">{new Date(asg.dueDate).toLocaleDateString()}</span>
                       </p>
                     </div>
 
                     <div className="flex flex-col justify-center min-w-[280px]">
                       {asg.status === "graded" ? (
-                        <div className="p-4 rounded-xl bg-slate-900 border border-slate-850 flex items-center justify-between text-sm">
+                        <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-sm">
                           <span className="text-slate-400">Score Received:</span>
                           <span className="text-base font-bold text-academic-gold">
                             {asg.marksObtained} / {asg.totalMarks}
@@ -557,7 +557,7 @@ export function StudentDashboard() {
                             </button>
                           </div>
                           {asg.submissionUrl && (
-                            <p className="text-[10px] text-slate-505 truncate max-w-[280px]">
+                            <p className="text-[10px] text-slate-500 truncate max-w-[280px]">
                               Submitted Link: <a href={asg.submissionUrl} target="_blank" rel="noreferrer" className="text-blue-400 underline hover:text-blue-300">{asg.submissionUrl}</a>
                             </p>
                           )}
@@ -568,7 +568,7 @@ export function StudentDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="bg-slate-950 border border-slate-850 p-10 rounded-2xl text-center text-slate-400">
+              <div className="bg-slate-950 border border-slate-800 p-10 rounded-2xl text-center text-slate-400">
                 📝 No class assignments issued for your semester yet.
               </div>
             )}
@@ -586,7 +586,7 @@ export function StudentDashboard() {
             <div className="space-y-4">
               {notices.length > 0 ? (
                 notices.map((n) => (
-                  <div key={n._id} className="bg-slate-950 border border-slate-850 p-5 rounded-2xl shadow-xl">
+                  <div key={n._id} className="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-xl">
                     <div className="flex items-center gap-2 mb-2 text-xs text-slate-500">
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-900 border border-slate-800 text-academic-gold">
                         Student Circular
@@ -599,7 +599,7 @@ export function StudentDashboard() {
                   </div>
                 ))
               ) : (
-                <div className="bg-slate-950 border border-slate-850 p-10 rounded-2xl text-center text-slate-400">
+                <div className="bg-slate-950 border border-slate-800 p-10 rounded-2xl text-center text-slate-400">
                   📢 No active circular announcements available for students.
                 </div>
               )}
@@ -611,3 +611,4 @@ export function StudentDashboard() {
     </div>
   );
 }
+

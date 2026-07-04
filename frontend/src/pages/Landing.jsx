@@ -1,87 +1,271 @@
-import { useEffect, useState, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  ArrowRight,
+  Award,
+  BadgeCheck,
+  BriefcaseBusiness,
+  Building2,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  Landmark,
+  LayoutDashboard,
+  LibraryBig,
+  Mail,
+  MapPin,
+  Menu,
+  Moon,
+  Phone,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Sun,
+  Users,
+  X
+} from "lucide-react";
+import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth.jsx";
+import juAuditorium from "../assets/ju-campus-gallery-2.jpg";
+import juLibrary from "../assets/ju-campus-gallery-1.jpg";
+import juMainLawn from "../assets/ju-campus-gallery-3.jpg";
+import juResearchBuilding from "../assets/ju-research-building.jpg";
+import juSportsGround from "../assets/ju-sports-ground.jpg";
 import "../App.css";
 
-/* ── Animated counter hook ── */
-function useCounter(target, duration = 2000, startCounting = true) {
+function useCounter(target, duration = 1800, enabled = true) {
   const [count, setCount] = useState(0);
+
   useEffect(() => {
-    if (!startCounting || target <= 0) return;
-    let start = 0;
-    const step = Math.max(1, Math.floor(target / (duration / 16)));
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) { setCount(target); clearInterval(timer); }
-      else setCount(start);
-    }, 16);
-    return () => clearInterval(timer);
-  }, [target, duration, startCounting]);
+    if (!enabled) return;
+    let frame;
+    const startedAt = performance.now();
+
+    const tick = (now) => {
+      const progress = Math.min((now - startedAt) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(target * eased));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [duration, enabled, target]);
+
   return count;
 }
 
-/* ── Intersection Observer hook ── */
-function useInView(threshold = 0.15) {
-  const ref = useRef(null);
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { setInView(true); obs.unobserve(el); }
-    }, { threshold });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [threshold]);
-  return [ref, inView];
+function Stat({ value, suffix = "", label, icon: Icon, compact = false, to = "/about" }) {
+  const ref = useMemo(() => ({ current: null }), []);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  const count = useCounter(value, 1800, inView);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className={`rounded-[24px] border border-white/50 bg-white/70 shadow-[0_24px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/55 ${
+        compact ? "min-w-[150px]" : ""
+      }`}
+    >
+      <Link to={to} className="block h-full p-5 transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-blue-200">
+        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/25">
+          <Icon className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <div className="text-3xl font-black tracking-tight text-slate-950 dark:text-white">
+          {count.toLocaleString()}
+          {suffix}
+        </div>
+        <p className="mt-1 text-sm font-medium text-slate-600 dark:text-slate-300">{label}</p>
+      </Link>
+    </motion.div>
+  );
 }
 
-/* ── SVG Icons (inline) ── */
-const Icons = {
-  menu: (
-    <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  ),
-  close: (
-    <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  ),
-  marksheet: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-  ),
-  attendance: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-  ),
-  assignment: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-  ),
-  secure: (
-    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-  ),
-  search: (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-  ),
-  arrowRight: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-  ),
-  check: (
-    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-  ),
-  phone: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-  ),
-  mail: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-  ),
-  location: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-  )
-};
+function SectionHeading({ eyebrow, title, children, dark = false }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.55 }}
+      className="mx-auto mb-12 max-w-3xl text-center"
+    >
+      <div
+        className={`mx-auto mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] ${
+          dark
+            ? "border-white/15 bg-white/10 text-cyan-100"
+            : "border-blue-200 bg-white/70 text-blue-700 shadow-sm"
+        }`}
+      >
+        <Sparkles className="h-4 w-4" aria-hidden="true" />
+        {eyebrow}
+      </div>
+      <h2 className={`text-3xl font-black tracking-tight md:text-5xl ${dark ? "text-white" : "text-slate-950 dark:text-white"}`}>
+        {title}
+      </h2>
+      {children && (
+        <p className={`mx-auto mt-5 max-w-2xl text-base leading-8 ${dark ? "text-blue-100/80" : "text-slate-600 dark:text-slate-300"}`}>
+          {children}
+        </p>
+      )}
+    </motion.div>
+  );
+}
+
+function ServiceCard({ item, index }) {
+  const Icon = item.icon;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 26 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-70px" }}
+      transition={{ delay: index * 0.045, duration: 0.45 }}
+      whileHover={{ y: -10, scale: 1.015 }}
+    >
+      <Link
+        to={item.to}
+        className="group relative block h-full overflow-hidden rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-[0_22px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition-all duration-300 hover:border-blue-200 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:border-white/10 dark:bg-slate-950/55"
+      >
+        <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${item.gradient}`} />
+        <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-blue-100 opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-80 dark:bg-cyan-500/20" />
+        <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${item.gradient} text-white shadow-xl shadow-blue-500/20`}>
+          <Icon className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <h3 className="text-xl font-black text-slate-950 dark:text-white">{item.title}</h3>
+        <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{item.description}</p>
+        <div className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-blue-700 transition-transform group-hover:translate-x-1 dark:text-cyan-300">
+          Open <ArrowRight className="h-4 w-4" aria-hidden="true" />
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+function FloatingShape({ className, delay = 0 }) {
+  return (
+    <motion.div
+      aria-hidden="true"
+      className={`pointer-events-none absolute rounded-full blur-3xl ${className}`}
+      animate={{ y: [0, -22, 0], x: [0, 14, 0], scale: [1, 1.08, 1] }}
+      transition={{ duration: 8, repeat: Infinity, delay, ease: "easeInOut" }}
+    />
+  );
+}
+
+const services = [
+  {
+    title: "Admissions",
+    description: "A guided, digital-first admissions experience for applicants, merit lists, eligibility and program discovery.",
+    icon: GraduationCap,
+    gradient: "from-blue-600 to-cyan-500",
+    to: "/admissions"
+  },
+  {
+    title: "Results",
+    description: "Fast semester records, verified marksheets, SGPA, CGPA and transparent academic history.",
+    icon: Award,
+    gradient: "from-indigo-600 to-blue-500",
+    to: "/results"
+  },
+  {
+    title: "Student Portal",
+    description: "Attendance, assignments, notices and academic essentials in one secure student workspace.",
+    icon: LayoutDashboard,
+    gradient: "from-cyan-500 to-teal-500",
+    to: "/student-portal"
+  },
+  {
+    title: "Faculty Portal",
+    description: "Tools for course coordination, notices, attendance, grading workflows and student support.",
+    icon: Users,
+    gradient: "from-sky-500 to-blue-700",
+    to: "/faculty-portal"
+  },
+  {
+    title: "Departments",
+    description: "Explore schools, programs, faculty strengths, research labs and academic calendars.",
+    icon: Building2,
+    gradient: "from-violet-600 to-blue-500",
+    to: "/departments"
+  },
+  {
+    title: "Research",
+    description: "Innovation hubs, doctoral work, funded projects and interdisciplinary research initiatives.",
+    icon: LibraryBig,
+    gradient: "from-blue-700 to-slate-700",
+    to: "/research"
+  },
+  {
+    title: "Scholarships",
+    description: "Financial aid, merit support, category scholarships and student success resources.",
+    icon: BadgeCheck,
+    gradient: "from-emerald-500 to-cyan-500",
+    to: "/scholarships"
+  },
+  {
+    title: "Placements",
+    description: "Career readiness, partner networks, internships, placement drives and alumni pathways.",
+    icon: BriefcaseBusiness,
+    gradient: "from-orange-500 to-blue-600",
+    to: "/placements"
+  }
+];
+
+const gallery = [
+  {
+    title: "Dhanvantri Library",
+    image: juLibrary,
+    alt: "Dhanvantri Library building at the University of Jammu",
+    position: "50% 50%"
+  },
+  {
+    title: "Brig. Rajinder Singh Auditorium",
+    image: juAuditorium,
+    alt: "Brigadier Rajinder Singh Auditorium at the University of Jammu",
+    position: "50% 50%"
+  },
+  {
+    title: "Research Facilities",
+    image: juResearchBuilding,
+    alt: "Research building at the University of Jammu",
+    position: "50% 50%"
+  },
+  {
+    title: "Sports Facilities",
+    image: juSportsGround,
+    alt: "University of Jammu sports ground",
+    position: "50% 50%"
+  }
+];
+
+const partners = ["TCS", "Infosys", "Wipro", "HCLTech", "Deloitte", "IBM", "Accenture", "Tech Mahindra"];
+
+const testimonials = [
+  {
+    name: "Aarav Sharma",
+    program: "B.Tech Computer Science",
+    quote: "The new portal makes academic life feel organized. Results, attendance and notices are finally easy to follow."
+  },
+  {
+    name: "Zoya Khan",
+    program: "MBA",
+    quote: "Jammu University feels more connected now. The experience is modern, confident and genuinely useful."
+  },
+  {
+    name: "Riya Gupta",
+    program: "M.Sc Physics",
+    quote: "The digital services save time and the interface feels premium without losing the university identity."
+  }
+];
 
 export function Landing() {
+  const location = useLocation();
   const { accessToken, role, logout } = useAuth();
   const [notices, setNotices] = useState([]);
   const [searchRoll, setSearchRoll] = useState("");
@@ -90,23 +274,42 @@ export function Landing() {
   const [searchBusy, setSearchBusy] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [feedbackForm, setFeedbackForm] = useState({ name: "", email: "", rating: 0, message: "" });
+  const [feedbackHover, setFeedbackHover] = useState(0);
+  const [feedbackBusy, setFeedbackBusy] = useState(false);
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
 
-  // Section refs for scroll animation
-  const [heroRef, heroVisible] = useInView(0.1);
-  const [statsRef, statsVisible] = useInView(0.2);
-  const [noticesRef, noticesVisible] = useInView(0.1);
-  const [servicesRef, servicesVisible] = useInView(0.1);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const smoothX = useSpring(mouseX, { stiffness: 70, damping: 18 });
+  const smoothY = useSpring(mouseY, { stiffness: 70, damping: 18 });
+  const heroImageY = useTransform(smoothY, [-0.5, 0.5], [18, -18]);
+  const orbX = useTransform(smoothX, [-0.5, 0.5], [28, -28]);
+  const orbY = useTransform(smoothY, [-0.5, 0.5], [-24, 24]);
 
-  // Animated stats
-  const studentsCount = useCounter(15000, 2000, statsVisible);
-  const deptsCount = useCounter(42, 1500, statsVisible);
-  const yearsCount = useCounter(57, 1800, statsVisible);
-  const facultyCount = useCounter(850, 2000, statsVisible);
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/about", label: "About" },
+    { to: "/academics", label: "Academics" },
+    { to: "/campus-life", label: "Campus Life" },
+    { to: "/placements", label: "Placements" },
+    { to: "/contact", label: "Contact" }
+  ];
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 18);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTestimonialIndex((current) => (current + 1) % testimonials.length);
+    }, 5200);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -116,645 +319,533 @@ export function Landing() {
       .catch((err) => console.error("Failed to load notices", err));
   }, []);
 
-  const handleVerifyRoll = useCallback(async (e) => {
-    e.preventDefault();
-    if (!searchRoll.trim()) return;
-    setSearchBusy(true);
-    setSearchError("");
-    setSearchResult(null);
+  const handleMouseMove = useCallback(
+    (event) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      mouseX.set((event.clientX - rect.left) / rect.width - 0.5);
+      mouseY.set((event.clientY - rect.top) / rect.height - 0.5);
+    },
+    [mouseX, mouseY]
+  );
 
-    try {
-      const res = await api.get(`/auth/verify-student/${encodeURIComponent(searchRoll.trim())}`);
-      const data = res.data?.data;
-      if (data?.found) {
-        setSearchResult({
-          rollNumber: data.student.rollNumber,
-          name: data.student.name,
-          branch: data.student.branch,
-          semester: data.student.semester,
-          status: "Active",
-          message: "Student records verified. Sign in to access full academic records."
-        });
-      } else {
-        setSearchError("No student record found for this roll number. Please check and try again.");
+  const handleVerifyRoll = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!searchRoll.trim()) return;
+      setSearchBusy(true);
+      setSearchError("");
+      setSearchResult(null);
+
+      try {
+        const res = await api.get(`/auth/verify-student/${encodeURIComponent(searchRoll.trim())}`);
+        const data = res.data?.data;
+        if (data?.found) {
+          setSearchResult({
+            rollNumber: data.student.rollNumber,
+            name: data.student.name,
+            branch: data.student.branch,
+            semester: data.student.semester,
+            status: "Active"
+          });
+        } else {
+          setSearchError("No student record found for this roll number.");
+        }
+      } catch {
+        setSearchError("Verification service unavailable. Please try again later.");
+      } finally {
+        setSearchBusy(false);
       }
-    } catch {
-      setSearchError("Verification service unavailable. Please try again later.");
-    } finally {
-      setSearchBusy(false);
-    }
-  }, [searchRoll]);
+    },
+    [searchRoll]
+  );
 
-  const navLinks = [
-    { href: "#about", label: "About" },
-    { href: "#stats", label: "Statistics" },
-    { href: "#notices", label: "Notices" },
-    { href: "#services", label: "Services" },
-    { href: "#contact", label: "Contact" }
-  ];
+  const handleFeedbackSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!feedbackForm.rating) {
+        setFeedbackError("Please select a star rating.");
+        return;
+      }
+      setFeedbackBusy(true);
+      setFeedbackError("");
+      setFeedbackSuccess(false);
+      try {
+        await api.post("/feedback", feedbackForm);
+        setFeedbackSuccess(true);
+        setFeedbackForm({ name: "", email: "", rating: 0, message: "" });
+      } catch (err) {
+        setFeedbackError(err?.response?.data?.error?.message || "Failed to submit feedback. Please try again.");
+      } finally {
+        setFeedbackBusy(false);
+      }
+    },
+    [feedbackForm]
+  );
+
+  const visibleNotices = notices.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-academic-navydeep text-slate-100 flex flex-col font-sans select-none">
-      {/* ═══ NAVBAR ═══ */}
-      <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "bg-academic-navydark/95 backdrop-blur-xl shadow-lg shadow-black/20 border-b border-academic-gold/10"
-            : "bg-transparent"
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="h-12 w-12 bg-academic-navy border-2 border-academic-gold flex items-center justify-center rounded-full shadow-glow-gold transition-shadow duration-300 group-hover:shadow-glow-gold-lg">
-                <span className="font-serif-academic font-bold text-lg text-academic-gold">JU</span>
+    <div className={`${darkMode ? "dark" : ""}`}>
+      <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_18%_8%,rgba(147,197,253,0.50),transparent_28rem),radial-gradient(circle_at_86%_18%,rgba(125,211,252,0.42),transparent_30rem),linear-gradient(135deg,#f8fbff_0%,#eff6ff_38%,#eefcff_72%,#ffffff_100%)] text-slate-950 transition-colors duration-500 dark:bg-[radial-gradient(circle_at_18%_8%,rgba(37,99,235,0.30),transparent_28rem),radial-gradient(circle_at_86%_18%,rgba(6,182,212,0.20),transparent_30rem),linear-gradient(135deg,#020617_0%,#0f172a_46%,#082f49_100%)] dark:text-white">
+        <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(37,99,235,0.055)_1px,transparent_1px),linear-gradient(90deg,rgba(37,99,235,0.055)_1px,transparent_1px)] bg-[size:80px_80px] opacity-70 dark:opacity-25" />
+          <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-b from-white/80 to-transparent dark:from-slate-950/70" />
+          <FloatingShape className="left-[-8rem] top-24 h-80 w-80 bg-blue-300/35 dark:bg-blue-600/25" />
+          <FloatingShape className="right-[-9rem] top-44 h-96 w-96 bg-cyan-200/55 dark:bg-cyan-500/18" delay={1.2} />
+          <FloatingShape className="bottom-20 left-1/3 h-72 w-72 bg-indigo-200/45 dark:bg-indigo-500/16" delay={2.1} />
+        </div>
+
+        <header className="fixed inset-x-0 top-4 z-50 px-4">
+          <motion.div
+            initial={{ opacity: 0, y: -18 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mx-auto flex max-w-7xl items-center justify-between rounded-[28px] border px-4 py-3 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl transition-all duration-300 ${
+              scrolled
+                ? "border-white/80 bg-white/90 dark:border-white/10 dark:bg-slate-950/82"
+                : "border-white/70 bg-white/72 dark:border-white/10 dark:bg-slate-950/56"
+            }`}
+          >
+            <Link to="/" className="flex items-center gap-3" aria-label="Jammu University home">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-700 to-cyan-500 text-sm font-black text-white shadow-lg shadow-blue-600/25">
+                JU
               </div>
-              <div>
-                <h1 className="font-serif-academic text-base md:text-lg font-bold tracking-wider text-white leading-tight">
-                  JAMMU UNIVERSITY
-                </h1>
-                <p className="text-[9px] text-academic-gold/80 font-medium tracking-[0.2em] uppercase">
-                  NAAC A+ Accredited
-                </p>
+              <div className="leading-tight">
+                <p className="text-sm font-black tracking-tight text-slate-950 dark:text-white">Jammu University</p>
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-blue-700 dark:text-cyan-300">NAAC A+ Accredited</p>
               </div>
             </Link>
 
-            {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-1">
-              {navLinks.map((l) => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  className="px-3 py-2 text-sm font-medium text-slate-300 hover:text-academic-gold transition-colors duration-200 rounded-lg hover:bg-white/5"
+            <nav className="hidden items-center gap-1 rounded-2xl border border-slate-200/80 bg-white/60 p-1 dark:border-white/10 dark:bg-white/5 lg:flex" aria-label="Primary">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold transition ${
+                    location.pathname === link.to
+                      ? "bg-blue-700 text-white shadow-lg shadow-blue-700/20"
+                      : "text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-200 dark:hover:bg-white/10 dark:hover:text-white"
+                  }`}
                 >
-                  {l.label}
-                </a>
+                  {link.label}
+                </Link>
               ))}
             </nav>
 
-            {/* Desktop CTAs */}
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden items-center gap-2 lg:flex">
+              <button
+                type="button"
+                onClick={() => setDarkMode((current) => !current)}
+                className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white/70 text-slate-700 transition hover:-translate-y-0.5 hover:text-blue-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200"
+                aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
               {accessToken ? (
                 <>
-                  <Link
-                    to={role === "admin" ? "/admin" : "/student"}
-                    className="rounded-xl bg-academic-gold text-academic-navy px-5 py-2.5 text-sm font-semibold hover:bg-academic-goldhover shadow-glow-gold transition-all duration-200 btn-shimmer"
-                  >
+                  <Link to={role === "admin" ? "/admin" : "/student"} className="rounded-2xl bg-blue-700 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-700/20 transition hover:-translate-y-0.5 hover:bg-blue-800">
                     Dashboard
                   </Link>
-                  <button
-                    onClick={logout}
-                    className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm font-medium hover:bg-white/5 hover:border-slate-600 transition-all duration-200"
-                  >
+                  <button onClick={logout} className="rounded-2xl border border-slate-200 bg-white/70 px-5 py-3 text-sm font-black text-slate-700 transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/5 dark:text-white">
                     Logout
                   </button>
                 </>
               ) : (
                 <>
-                  <Link
-                    to="/login/student"
-                    className="rounded-xl bg-academic-navy border border-academic-gold/40 text-white px-5 py-2.5 text-sm font-semibold hover:bg-academic-navy/80 hover:border-academic-gold/70 transition-all duration-200"
-                  >
+                  <Link to="/login/student" className="rounded-2xl border border-slate-200 bg-white/70 px-5 py-3 text-sm font-black text-slate-700 transition hover:-translate-y-0.5 hover:text-blue-700 dark:border-white/10 dark:bg-white/5 dark:text-white">
                     Student Login
                   </Link>
-                  <Link
-                    to="/signup/student"
-                    className="rounded-xl bg-academic-gold text-academic-navy px-5 py-2.5 text-sm font-semibold hover:bg-academic-goldhover shadow-glow-gold transition-all duration-200 btn-shimmer"
-                  >
-                    Register
-                  </Link>
-                  <Link
-                    to="/login/admin"
-                    className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm font-medium hover:bg-white/5 hover:border-slate-600 transition-all duration-200"
-                  >
-                    Admin
+                  <Link to="/admissions" className="rounded-2xl bg-blue-700 px-5 py-3 text-sm font-black text-white shadow-lg shadow-blue-700/20 transition hover:-translate-y-0.5 hover:bg-blue-800">
+                    Admissions
                   </Link>
                 </>
               )}
             </div>
 
-            {/* Mobile menu toggle */}
             <button
-              className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white/70 text-slate-900 dark:border-white/10 dark:bg-white/5 dark:text-white lg:hidden"
+              onClick={() => setMobileMenuOpen((current) => !current)}
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? Icons.close : Icons.menu}
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Mobile Drawer */}
-        <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            mobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
-          <div className="bg-academic-navydark/98 backdrop-blur-xl border-t border-slate-800/50 px-4 py-4 space-y-1">
-            {navLinks.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/5 hover:text-white transition"
-              >
-                {l.label}
-              </a>
-            ))}
-            <hr className="border-slate-800 my-3" />
-            <div className="flex flex-col gap-2 px-2">
-              {accessToken ? (
-                <>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mx-auto mt-3 max-w-7xl rounded-[26px] border border-white/60 bg-white/90 p-4 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/90 lg:hidden"
+            >
+              <div className="grid gap-2">
+                {navLinks.map((link) => (
                   <Link
-                    to={role === "admin" ? "/admin" : "/student"}
+                    key={link.to}
+                    to={link.to}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-3 rounded-xl bg-academic-gold text-academic-navy text-sm font-semibold text-center hover:bg-academic-goldhover transition"
+                    className={`rounded-2xl px-4 py-3 text-sm font-bold ${
+                      location.pathname === link.to
+                        ? "bg-blue-700 text-white"
+                        : "text-slate-700 hover:bg-blue-50 dark:text-slate-100 dark:hover:bg-white/10"
+                    }`}
                   >
-                    Go to Dashboard
+                    {link.label}
                   </Link>
-                  <button
-                    onClick={() => { logout(); setMobileMenuOpen(false); }}
-                    className="w-full py-3 rounded-xl border border-slate-700 text-sm font-medium hover:bg-white/5 transition"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/login/student"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-3 rounded-xl bg-academic-navy border border-academic-gold/40 text-white text-sm font-semibold text-center hover:bg-academic-navy/80 transition"
-                  >
-                    Student Login
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setDarkMode((current) => !current)}
+                  className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-slate-700 hover:bg-blue-50 dark:text-slate-100 dark:hover:bg-white/10"
+                >
+                  {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                  {darkMode ? "Light mode" : "Dark mode"}
+                </button>
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <Link to="/login/student" className="rounded-2xl border border-slate-200 px-4 py-3 text-center text-sm font-black text-slate-700 dark:border-white/10 dark:text-white">
+                    Login
                   </Link>
-                  <Link
-                    to="/signup/student"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-3 rounded-xl bg-academic-gold text-academic-navy text-sm font-semibold text-center hover:bg-academic-goldhover transition"
-                  >
-                    Register
+                  <Link to="/admissions" className="rounded-2xl bg-blue-700 px-4 py-3 text-center text-sm font-black text-white">
+                    Apply
                   </Link>
-                  <Link
-                    to="/login/admin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="w-full py-3 rounded-xl border border-slate-700 text-sm font-medium text-center hover:bg-white/5 transition"
-                  >
-                    Admin Portal
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* ═══ HERO SECTION ═══ */}
-      <main className="flex-grow pt-20">
-        <section
-          id="about"
-          ref={heroRef}
-          className="relative overflow-hidden py-20 md:py-32 bg-grid-pattern"
-        >
-          {/* Background decorations */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(212,175,55,0.08)_0%,transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(15,43,92,0.3)_0%,transparent_50%)]" />
-          <div className="absolute top-20 right-10 w-72 h-72 bg-academic-gold/5 rounded-full blur-3xl animate-float pointer-events-none" />
-          <div className="absolute bottom-10 left-10 w-96 h-96 bg-academic-navy/30 rounded-full blur-3xl animate-float-slow pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              {/* Left — CTA */}
-              <div className={`space-y-8 ${heroVisible ? "animate-fade-in-up" : "opacity-0"}`}>
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold bg-academic-gold/10 text-academic-gold border border-academic-gold/20 tracking-widest uppercase">
-                  <div className="pulse-dot" />
-                  Official Examination Portal
-                </div>
-
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white font-serif-academic leading-[1.1]">
-                  Jammu University{" "}
-                  <span className="text-gradient-gold block mt-2">Student Portal</span>
-                </h2>
-
-                <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-lg">
-                  Access your examination results, attendance records, assignments, and campus notices
-                  in one unified, secure academic portal. Built for modern digital governance.
-                </p>
-
-                <div className="flex flex-wrap gap-4">
-                  <Link
-                    to="/login/student"
-                    className="group inline-flex items-center gap-2 rounded-xl bg-academic-gold text-academic-navy font-semibold px-7 py-3.5 hover:bg-academic-goldhover shadow-glow-gold transition-all duration-300 btn-shimmer text-sm"
-                  >
-                    Enter Student Portal
-                    <span className="transition-transform duration-200 group-hover:translate-x-1">{Icons.arrowRight}</span>
-                  </Link>
-                  <Link
-                    to="/signup/student"
-                    className="inline-flex items-center gap-2 rounded-xl border border-slate-700 text-slate-300 font-semibold px-7 py-3.5 hover:bg-white/5 hover:border-slate-600 hover:text-white transition-all duration-300 text-sm"
-                  >
-                    Create Account
-                  </Link>
-                </div>
-
-                {/* Trust badges */}
-                <div className="flex items-center gap-6 pt-2">
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    {Icons.secure}
-                    <span>SSL Encrypted</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    {Icons.check}
-                    <span>NAAC A+ Verified</span>
-                  </div>
                 </div>
               </div>
+            </motion.div>
+          )}
+        </header>
 
-              {/* Right — University Crest Card */}
-              <div className={`flex justify-center ${heroVisible ? "animate-slide-in-right" : "opacity-0"}`}>
-                <div className="relative w-full max-w-sm">
-                  {/* Glow behind card */}
-                  <div className="absolute inset-0 bg-academic-gold/5 rounded-3xl blur-2xl scale-110" />
+        <main className="relative z-10">
+          <section id="about" onMouseMove={handleMouseMove} className="relative overflow-hidden px-4 pb-16 pt-32 md:pt-36 lg:pb-20">
+            <div className="mx-auto grid max-w-7xl items-center gap-10 lg:min-h-[calc(100vh-9rem)] lg:grid-cols-[minmax(0,0.94fr)_minmax(320px,0.86fr)] xl:gap-14">
+              <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-3xl">
+                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/70 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-blue-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 dark:text-cyan-200">
+                  <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                  Official Digital University Portal
+                </div>
+                <h1 className="text-4xl font-black leading-[1.04] tracking-tight text-slate-950 dark:text-white sm:text-5xl md:text-6xl xl:text-7xl">
+                  A smarter Jammu University for the next generation.
+                </h1>
+                <p className="mt-7 max-w-2xl text-base leading-8 text-slate-600 dark:text-slate-300 md:text-lg">
+                  As a flagship university, Jammu deserves a digital campus with the same confidence as its classrooms: clear admissions, trusted records, research visibility, placements and student services in one refined experience.
+                </p>
+                <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                  <Link to="/admissions" className="group inline-flex items-center justify-center gap-2 rounded-[20px] bg-blue-700 px-7 py-4 text-sm font-black text-white shadow-[0_22px_60px_rgba(37,99,235,0.28)] transition hover:-translate-y-1 hover:bg-blue-800">
+                    Start Application
+                    <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" aria-hidden="true" />
+                  </Link>
+                  <Link to="/login/student" className="inline-flex items-center justify-center gap-2 rounded-[20px] border border-slate-200 bg-white/75 px-7 py-4 text-sm font-black text-slate-800 shadow-lg shadow-slate-900/5 backdrop-blur transition hover:-translate-y-1 hover:text-blue-700 dark:border-white/10 dark:bg-white/10 dark:text-white">
+                    Enter Student Portal
+                  </Link>
+                </div>
 
-                  <div className="relative glass-card-gold rounded-3xl p-8 shadow-2xl animate-glow-pulse">
-                    <div className="flex flex-col items-center text-center">
-                      <div className="h-28 w-28 bg-academic-navy border-4 border-academic-gold flex items-center justify-center rounded-full shadow-glow-gold-lg animate-bounce-subtle">
-                        <span className="font-serif-academic font-bold text-4xl text-academic-gold">JU</span>
+                <div className="mt-9 grid grid-cols-2 gap-3 md:grid-cols-4">
+                  <Stat value={15000} suffix="+" label="Students" icon={GraduationCap} compact to="/admissions" />
+                  <Stat value={850} suffix="+" label="Faculty" icon={Users} compact to="/login/faculty" />
+                  <Stat value={42} suffix="+" label="Departments" icon={Building2} compact to="/departments" />
+                  <Stat value={1} suffix=" A+" label="NAAC" icon={Award} compact to="/about" />
+                </div>
+              </motion.div>
+
+              <motion.div style={{ y: heroImageY }} className="relative mx-auto w-full max-w-lg lg:max-w-xl">
+                <motion.div style={{ x: orbX, y: orbY }} className="absolute -inset-4 rounded-[44px] bg-gradient-to-br from-blue-500/18 via-cyan-300/22 to-white blur-2xl dark:from-blue-500/30 dark:to-cyan-500/20" />
+                <div className="relative overflow-hidden rounded-[32px] border border-white/80 bg-white/78 p-2.5 shadow-[0_30px_90px_rgba(15,23,42,0.20)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/60 md:rounded-[40px] md:p-3">
+                  <img src={juMainLawn} alt="Main campus lawns and academic buildings at the University of Jammu" className="h-[340px] w-full rounded-[24px] object-cover sm:h-[420px] md:rounded-[32px] lg:h-[460px]" />
+                  <div className="absolute inset-3 rounded-[32px] bg-gradient-to-tr from-blue-950/30 via-transparent to-white/10" />
+                  <div className="absolute inset-x-5 bottom-5 rounded-[24px] border border-white/45 bg-white/86 p-4 shadow-2xl backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/78 sm:inset-x-6 sm:bottom-6 sm:p-5 md:rounded-[28px]">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-700 text-white sm:h-12 sm:w-12">
+                        <Landmark className="h-6 w-6" aria-hidden="true" />
                       </div>
-
-                      <h3 className="mt-6 text-xl font-bold font-serif-academic text-white">
-                        Office of Controller of Exams
-                      </h3>
-                      <p className="mt-2 text-xs text-slate-400 max-w-xs leading-relaxed">
-                        Jammu & Kashmir, India, Pin — 180006. Accredited by NAAC with Grade A+.
-                      </p>
-
-                      <div className="mt-6 pt-6 border-t border-slate-700/50 w-full grid grid-cols-2 gap-4">
-                        <div className="text-center p-3 rounded-xl bg-white/5">
-                          <div className="text-[10px] text-slate-400 uppercase tracking-wider">Est.</div>
-                          <div className="text-lg font-bold text-white mt-0.5">1969</div>
-                        </div>
-                        <div className="text-center p-3 rounded-xl bg-white/5">
-                          <div className="text-[10px] text-slate-400 uppercase tracking-wider">Campus</div>
-                          <div className="text-lg font-bold text-white mt-0.5">118 Acres</div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 w-full p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20">
-                        <div className="flex items-center justify-center gap-2 text-xs text-emerald-400">
-                          <div className="pulse-dot" />
-                          <span className="font-medium">Portal Online — All Systems Operational</span>
-                        </div>
+                      <div className="min-w-0">
+                        <p className="font-black text-slate-950 dark:text-white">Flagship Mountain Campus</p>
+                        <p className="text-xs leading-5 text-slate-600 dark:text-slate-300 sm:text-sm">A premium digital front door for Jammu University.</p>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ═══ ANIMATED STATS BAR ═══ */}
-        <section id="stats" ref={statsRef} className="relative py-16 bg-academic-navydark/50 border-y border-slate-800/50">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.04)_0%,transparent_70%)]" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {[
-                { label: "Students Enrolled", value: studentsCount, suffix: "+" },
-                { label: "Departments", value: deptsCount, suffix: "" },
-                { label: "Years of Legacy", value: yearsCount, suffix: "" },
-                { label: "Faculty Members", value: facultyCount, suffix: "+" }
-              ].map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className={`text-center group ${statsVisible ? "animate-fade-in-up" : "opacity-0"}`}
-                  style={{ animationDelay: `${i * 150}ms` }}
-                >
-                  <div className="stat-value text-3xl md:text-4xl font-bold text-gradient-gold">
-                    {stat.value.toLocaleString()}{stat.suffix}
-                  </div>
-                  <div className="mt-2 text-xs text-slate-400 uppercase tracking-widest font-medium">
-                    {stat.label}
-                  </div>
+          <section id="stats" className="px-4 py-12">
+            <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-5">
+              <Stat value={15000} suffix="+" label="Active learners" icon={GraduationCap} to="/admissions" />
+              <Stat value={850} suffix="+" label="Faculty mentors" icon={Users} to="/login/faculty" />
+              <Stat value={300} suffix="+" label="Placement drives" icon={BriefcaseBusiness} to="/placements" />
+              <Stat value={42} suffix="+" label="Departments" icon={Building2} to="/departments" />
+              <Stat value={1} suffix=" A+" label="NAAC accreditation" icon={Award} to="/about" />
+            </div>
+          </section>
+
+          <section id="verify" className="px-4 py-16">
+            <div className="mx-auto grid max-w-7xl gap-8 rounded-[36px] border border-white/70 bg-white/78 p-6 shadow-[0_28px_90px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/55 lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
+              <div>
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-700 text-white">
+                  <Search className="h-6 w-6" aria-hidden="true" />
                 </div>
+                <h2 className="text-3xl font-black text-slate-950 dark:text-white">Verify a student record instantly.</h2>
+                <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                  Enter a roll number to confirm whether a student profile exists in the university records.
+                </p>
+              </div>
+              <form onSubmit={handleVerifyRoll} className="space-y-4">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <input
+                    value={searchRoll}
+                    onChange={(e) => setSearchRoll(e.target.value)}
+                    placeholder="Enter roll number, e.g. 22CS001"
+                    className="min-h-[56px] flex-1 rounded-[20px] border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-white/10 dark:bg-slate-900 dark:text-white"
+                  />
+                  <button type="submit" disabled={searchBusy} className="min-h-[56px] rounded-[20px] bg-blue-700 px-7 text-sm font-black text-white shadow-lg shadow-blue-700/20 transition hover:-translate-y-0.5 hover:bg-blue-800 disabled:opacity-60">
+                    {searchBusy ? "Checking..." : "Verify"}
+                  </button>
+                </div>
+                {searchError && <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700 dark:border-red-500/30 dark:bg-red-950/30 dark:text-red-200">{searchError}</p>}
+                {searchResult && (
+                  <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="grid gap-3 rounded-[24px] border border-emerald-200 bg-emerald-50/80 p-5 text-sm dark:border-emerald-500/30 dark:bg-emerald-950/30">
+                    <div className="flex items-center gap-2 font-black text-emerald-700 dark:text-emerald-200">
+                      <BadgeCheck className="h-5 w-5" /> Record found
+                    </div>
+                    <div className="grid gap-2 text-slate-700 dark:text-slate-200 sm:grid-cols-4">
+                      <span><strong>Roll:</strong> {searchResult.rollNumber}</span>
+                      <span><strong>Name:</strong> {searchResult.name}</span>
+                      <span><strong>Branch:</strong> {searchResult.branch}</span>
+                      <span><strong>Semester:</strong> {searchResult.semester}</span>
+                    </div>
+                  </motion.div>
+                )}
+              </form>
+            </div>
+          </section>
+
+          <section id="services" className="px-4 py-20">
+            <SectionHeading eyebrow="Academic Ecosystem" title="Premium services designed around every university journey.">
+              From admissions to placements, each module feels fast, secure and thoughtfully connected.
+            </SectionHeading>
+            <div className="mx-auto grid max-w-7xl gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {services.map((service, index) => (
+                <ServiceCard key={service.title} item={service} index={index} />
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* ═══ NOTICES & VERIFICATION ═══ */}
-        <section ref={noticesRef} className="py-20 relative">
-          <div className="absolute inset-0 bg-grid-pattern opacity-50" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid lg:grid-cols-3 gap-8">
-            {/* Notice Board */}
-            <div
-              id="notices"
-              className={`lg:col-span-2 space-y-6 ${noticesVisible ? "animate-fade-in-up" : "opacity-0"}`}
-            >
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div>
-                  <h3 className="text-2xl font-bold font-serif-academic text-white">Notice Board</h3>
-                  <p className="text-xs text-slate-400 mt-1">University announcements and updates</p>
-                </div>
-                <span className="inline-flex items-center gap-2 text-xs text-academic-gold border border-academic-gold/20 bg-academic-gold/5 px-3 py-1.5 rounded-lg font-semibold tracking-wider uppercase">
-                  <div className="pulse-dot" />
-                  Live
-                </span>
-              </div>
-
-              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-2 custom-scrollbar">
-                {notices.length === 0 ? (
-                  <div className="glass-card p-10 rounded-2xl text-center">
-                    <div className="text-4xl mb-3">📋</div>
-                    <p className="text-slate-400 text-sm">No active announcements at this time.</p>
-                    <p className="text-slate-500 text-xs mt-1">Check back later for updates.</p>
-                  </div>
-                ) : (
-                  notices.map((n, i) => (
-                    <div
-                      key={n._id}
-                      className="notice-card glass-card hover:border-academic-gold/30 p-5 rounded-xl hover-lift cursor-default"
-                      style={{ animationDelay: `${i * 100}ms` }}
-                    >
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-academic-navy border border-academic-gold/20 text-academic-gold">
-                          {n.audience}
-                        </span>
-                        <span className="text-xs text-slate-500">
-                          {new Date(n.createdAt).toLocaleDateString("en-IN", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric"
-                          })}
-                        </span>
-                      </div>
-                      <h4 className="text-base font-bold text-white mb-1.5">{n.title}</h4>
-                      <p className="text-sm text-slate-300 whitespace-pre-line leading-relaxed">{n.body}</p>
+          <section id="announcements" className="px-4 py-20">
+            <SectionHeading eyebrow="Latest Announcements" title="Important updates without the clutter.">
+              A polished notice experience connected to the university backend.
+            </SectionHeading>
+            <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-3">
+              {(visibleNotices.length ? visibleNotices : [
+                { _id: "default-1", title: "Admissions window open", body: "Program applications, eligibility checks and student registration are now available.", createdAt: new Date().toISOString() },
+                { _id: "default-2", title: "Examination services live", body: "Students can access results, attendance and assignment services through the portal.", createdAt: new Date().toISOString() },
+                { _id: "default-3", title: "Placement preparation", body: "Career readiness sessions and placement partner activities continue this semester.", createdAt: new Date().toISOString() }
+              ]).map((notice, index) => (
+                <motion.div
+                  key={notice._id}
+                  initial={{ opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.08 }}
+                >
+                  <Link to="/academics" className="block h-full rounded-[28px] border border-white/60 bg-white/80 p-6 shadow-[0_22px_70px_rgba(15,23,42,0.10)] backdrop-blur-2xl transition hover:-translate-y-1 hover:border-blue-200 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:border-white/10 dark:bg-slate-950/55">
+                    <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.14em] text-blue-700 dark:text-cyan-300">
+                      <CalendarDays className="h-4 w-4" />
+                      {new Date(notice.createdAt).toLocaleDateString()}
                     </div>
-                  ))
-                )}
+                    <h3 className="text-xl font-black text-slate-950 dark:text-white">{notice.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{notice.body}</p>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          <section id="gallery" className="px-4 py-20">
+            <SectionHeading eyebrow="Campus Gallery" title="A modern campus framed for ambition.">
+              Academic spaces, research culture and student life presented with visual depth.
+            </SectionHeading>
+            <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-4">
+              {gallery.map((item, index) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.06 }}
+                  className={`${index === 0 ? "md:col-span-2 md:row-span-2" : ""}`}
+                >
+                  <Link to="/campus-life" className="group relative block min-h-72 overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.16)] focus:outline-none focus:ring-4 focus:ring-blue-200">
+                    <img src={item.image} alt={item.alt} style={{ objectPosition: item.position }} className="h-72 w-full object-cover transition duration-700 group-hover:scale-110 md:h-full" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/5 to-transparent" />
+                    <span className="absolute bottom-5 left-5 text-lg font-black text-white">{item.title}</span>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          <section id="placements" className="px-4 py-20">
+            <div className="mx-auto max-w-7xl overflow-hidden rounded-[40px] bg-[radial-gradient(circle_at_20%_0%,rgba(59,130,246,0.45),transparent_24rem),linear-gradient(135deg,#020617,#0f172a_54%,#082f49)] p-8 shadow-[0_30px_100px_rgba(15,23,42,0.24)] md:p-12">
+              <SectionHeading eyebrow="Career Outcomes" title="Placement partnerships that open real doors." dark>
+                Training, internships and industry relationships help students move from campus to careers.
+              </SectionHeading>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {partners.map((partner) => (
+                  <motion.div
+                    key={partner}
+                    whileHover={{ y: -6, scale: 1.02 }}
+                  >
+                    <Link to="/placements" className="flex h-24 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.06] text-xl font-black tracking-tight text-white shadow-xl transition hover:bg-white/[0.12] focus:outline-none focus:ring-4 focus:ring-cyan-300/30">
+                      {partner}
+                    </Link>
+                  </motion.div>
+                ))}
               </div>
             </div>
+          </section>
 
-            {/* Verification Panel */}
-            <div
-              id="verify"
-              className={`${noticesVisible ? "animate-slide-in-right" : "opacity-0"}`}
-            >
-              <div className="glass-card-gold rounded-2xl p-6 shadow-xl sticky top-28">
-                <div className="flex items-center gap-3 border-b border-slate-800 pb-4 mb-5">
-                  <div className="h-10 w-10 bg-academic-navy rounded-xl flex items-center justify-center border border-academic-gold/20">
-                    {Icons.search}
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold font-serif-academic text-white">Verify Student</h3>
-                    <p className="text-[10px] text-slate-400">Real-time record verification</p>
-                  </div>
+          <section className="px-4 py-20">
+            <SectionHeading eyebrow="Student Voices" title="A university experience people can feel.">
+              Real stories, smooth transitions and a more human portal experience.
+            </SectionHeading>
+            <div className="mx-auto max-w-4xl rounded-[36px] border border-white/70 bg-white/80 p-8 shadow-[0_28px_90px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/55">
+              <motion.div
+                key={testimonialIndex}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.45 }}
+                className="text-center"
+              >
+                <div className="mb-6 flex justify-center gap-1 text-amber-400">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="h-5 w-5 fill-current" />
+                  ))}
                 </div>
+                <p className="text-2xl font-black leading-10 text-slate-950 dark:text-white">"{testimonials[testimonialIndex].quote}"</p>
+                <p className="mt-6 font-black text-blue-700 dark:text-cyan-300">{testimonials[testimonialIndex].name}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{testimonials[testimonialIndex].program}</p>
+              </motion.div>
+              <div className="mt-8 flex items-center justify-center gap-3">
+                <button onClick={() => setTestimonialIndex((testimonialIndex + testimonials.length - 1) % testimonials.length)} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:text-blue-700 dark:border-white/10 dark:bg-white/5 dark:text-white" aria-label="Previous testimonial">
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button onClick={() => setTestimonialIndex((testimonialIndex + 1) % testimonials.length)} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:text-blue-700 dark:border-white/10 dark:bg-white/5 dark:text-white" aria-label="Next testimonial">
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </section>
 
-                <form onSubmit={handleVerifyRoll} className="space-y-4">
-                  <div>
-                    <label className="text-xs font-semibold text-slate-400 block mb-1.5">
-                      Student Roll Number
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 22CS001"
-                      value={searchRoll}
-                      onChange={(e) => setSearchRoll(e.target.value)}
-                      className="w-full rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5 text-sm text-white placeholder-slate-500 input-glow outline-none transition-all duration-300"
-                    />
+          <section id="feedback" className="px-4 py-20">
+            <div className="mx-auto grid max-w-7xl gap-8 rounded-[40px] border border-white/70 bg-white/82 p-6 shadow-[0_28px_90px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/55 lg:grid-cols-[0.85fr_1.15fr] lg:p-8">
+              <div>
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-700 text-white">
+                  <Mail className="h-6 w-6" />
+                </div>
+                <h2 className="text-3xl font-black text-slate-950 dark:text-white">Help improve the portal.</h2>
+                <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                  Feedback is sent directly through the existing backend endpoint.
+                </p>
+              </div>
+
+              {feedbackSuccess ? (
+                <div className="rounded-[28px] border border-emerald-200 bg-emerald-50 p-8 text-center dark:border-emerald-500/30 dark:bg-emerald-950/30">
+                  <BadgeCheck className="mx-auto h-12 w-12 text-emerald-600" />
+                  <h3 className="mt-4 text-xl font-black text-slate-950 dark:text-white">Thank you for the feedback.</h3>
+                  <button onClick={() => setFeedbackSuccess(false)} className="mt-6 text-sm font-black text-blue-700 dark:text-cyan-300">
+                    Submit another response
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setFeedbackForm((prev) => ({ ...prev, rating: star }))}
+                        onMouseEnter={() => setFeedbackHover(star)}
+                        onMouseLeave={() => setFeedbackHover(0)}
+                        className="text-amber-400 transition hover:scale-110"
+                        aria-label={`Rate ${star} out of 5`}
+                      >
+                        <Star className={`h-7 w-7 ${star <= (feedbackHover || feedbackForm.rating) ? "fill-current" : ""}`} />
+                      </button>
+                    ))}
                   </div>
-
-                  <button
-                    type="submit"
-                    disabled={searchBusy}
-                    className="w-full bg-academic-navy border border-academic-gold/30 hover:border-academic-gold/60 hover:bg-academic-navy/70 text-white py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {searchBusy ? (
-                      <>
-                        <div className="spinner-light" />
-                        Searching...
-                      </>
-                    ) : (
-                      <>
-                        {Icons.search}
-                        Verify Record
-                      </>
-                    )}
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <input value={feedbackForm.name} onChange={(e) => setFeedbackForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Name" className="min-h-[52px] rounded-[18px] border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-white" />
+                    <input type="email" value={feedbackForm.email} onChange={(e) => setFeedbackForm((prev) => ({ ...prev, email: e.target.value }))} placeholder="Email" className="min-h-[52px] rounded-[18px] border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-white" />
+                  </div>
+                  <textarea required rows={4} value={feedbackForm.message} onChange={(e) => setFeedbackForm((prev) => ({ ...prev, message: e.target.value }))} placeholder="Tell us what can be improved..." className="w-full rounded-[18px] border border-slate-200 bg-white px-4 py-4 text-sm font-semibold text-slate-900 dark:border-white/10 dark:bg-slate-900 dark:text-white" />
+                  {feedbackError && <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700 dark:border-red-500/30 dark:bg-red-950/30 dark:text-red-200">{feedbackError}</p>}
+                  <button disabled={feedbackBusy} className="w-full rounded-[20px] bg-blue-700 px-7 py-4 text-sm font-black text-white shadow-lg shadow-blue-700/20 transition hover:-translate-y-0.5 hover:bg-blue-800 disabled:opacity-60">
+                    {feedbackBusy ? "Submitting..." : "Submit Feedback"}
                   </button>
                 </form>
+              )}
+            </div>
+          </section>
+        </main>
 
-                {searchError && (
-                  <div className="mt-4 p-3 rounded-xl bg-red-950/30 border border-red-900/50 text-xs text-red-300 flex items-start gap-2">
-                    <span className="text-red-400 mt-0.5">⚠</span>
-                    {searchError}
-                  </div>
-                )}
-
-                {searchResult && (
-                  <div className="mt-4 p-4 rounded-xl bg-slate-900/60 border border-emerald-500/20 text-xs space-y-2.5 animate-scale-in">
-                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
-                      <div className="h-6 w-6 bg-emerald-950/50 border border-emerald-500/30 rounded-full flex items-center justify-center text-emerald-400">
-                        {Icons.check}
-                      </div>
-                      <span className="font-semibold text-emerald-400">Record Found</span>
-                    </div>
-                    {[
-                      { label: "Roll Number", val: searchResult.rollNumber, cls: "text-white font-bold" },
-                      { label: "Student Name", val: searchResult.name, cls: "text-white" },
-                      { label: "Department", val: searchResult.branch, cls: "text-slate-200" },
-                      { label: "Semester", val: searchResult.semester, cls: "text-slate-200" },
-                      { label: "Status", val: searchResult.status, cls: "text-emerald-400 font-semibold" }
-                    ].map((row) => (
-                      <div key={row.label} className="flex justify-between">
-                        <span className="text-slate-400">{row.label}</span>
-                        <span className={row.cls}>{row.val}</span>
-                      </div>
-                    ))}
-                    <p className="text-[11px] text-slate-300 italic pt-2 border-t border-slate-800">{searchResult.message}</p>
-                  </div>
-                )}
-
-                <div className="mt-5 pt-4 border-t border-slate-800/50 text-[10px] text-slate-500 leading-relaxed text-center flex items-center justify-center gap-1.5">
-                  {Icons.secure}
-                  <span>Authorized academic verification. Logs are audited.</span>
+        <footer id="contact" className="relative z-10 mt-10 bg-slate-950 px-4 py-16 text-white">
+          <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1.25fr_0.75fr_0.75fr_1fr]">
+            <div>
+              <Link to="/" className="mb-5 flex items-center gap-3" aria-label="Jammu University home">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-400 text-sm font-black">JU</div>
+                <div>
+                  <p className="font-black">Jammu University</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-300">NAAC A+ Accredited</p>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ SERVICES ═══ */}
-        <section
-          id="services"
-          ref={servicesRef}
-          className="py-20 border-t border-slate-800/50 relative"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(212,175,55,0.04)_0%,transparent_60%)]" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className={`text-center mb-14 ${servicesVisible ? "animate-fade-in-up" : "opacity-0"}`}>
-              <span className="text-xs text-academic-gold uppercase tracking-[0.3em] font-semibold">What We Offer</span>
-              <h3 className="text-3xl font-bold font-serif-academic text-white mt-3">
-                Portal Services & Utilities
-              </h3>
-              <p className="text-sm text-slate-400 mt-3 max-w-lg mx-auto leading-relaxed">
-                Everything you need for academic management, accessible from a single secure platform.
-              </p>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                {
-                  icon: Icons.marksheet,
-                  title: "Marksheets",
-                  desc: "Download validated semester result cards with SGPA, credit allocations, and grade points."
-                },
-                {
-                  icon: Icons.attendance,
-                  title: "Attendance Logs",
-                  desc: "Subject-wise class records, present counts, and visual eligibility metrics at a glance."
-                },
-                {
-                  icon: Icons.assignment,
-                  title: "Assignments",
-                  desc: "View instructions, track due dates, and upload submissions directly into the grading system."
-                },
-                {
-                  icon: Icons.secure,
-                  title: "Secure Access",
-                  desc: "JWT-based token security with password recovery to keep student profiles fully protected."
-                }
-              ].map((svc, i) => (
-                <div
-                  key={svc.title}
-                  className={`glass-card rounded-2xl p-6 hover-lift group cursor-default ${
-                    servicesVisible ? "animate-fade-in-up" : "opacity-0"
-                  }`}
-                  style={{ animationDelay: `${i * 120}ms` }}
-                >
-                  <div className="h-12 w-12 bg-academic-navy rounded-xl flex items-center justify-center text-academic-gold border border-academic-gold/20 service-icon mb-5">
-                    {svc.icon}
-                  </div>
-                  <h4 className="font-bold text-white text-base group-hover:text-academic-gold transition-colors duration-300">
-                    {svc.title}
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-3 leading-relaxed">{svc.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ CTA Banner ═══ */}
-        <section className="py-16 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-academic-navy via-academic-navydark to-academic-navy" />
-          <div className="absolute inset-0 bg-grid-pattern opacity-30" />
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <h3 className="text-2xl md:text-3xl font-bold font-serif-academic text-white mb-4">
-              Ready to Access Your Academic Records?
-            </h3>
-            <p className="text-slate-300 text-sm md:text-base mb-8 max-w-xl mx-auto">
-              Join thousands of students already using the Jammu University portal for seamless academic management.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                to="/signup/student"
-                className="group inline-flex items-center gap-2 rounded-xl bg-academic-gold text-academic-navy font-semibold px-8 py-3.5 hover:bg-academic-goldhover shadow-glow-gold transition-all duration-300 btn-shimmer"
-              >
-                Get Started Now
-                <span className="transition-transform duration-200 group-hover:translate-x-1">{Icons.arrowRight}</span>
               </Link>
-              <Link
-                to="/login/student"
-                className="inline-flex items-center gap-2 rounded-xl border border-academic-gold/30 text-academic-gold font-semibold px-8 py-3.5 hover:bg-academic-gold/5 transition-all duration-300"
-              >
-                Sign In
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* ═══ FOOTER ═══ */}
-      <footer id="contact" className="bg-academic-navydark border-t border-academic-gold/10 relative">
-        <div className="absolute inset-0 bg-grid-pattern opacity-20" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
-          <div className="grid md:grid-cols-4 gap-10">
-            {/* Brand */}
-            <div className="md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-9 w-9 bg-academic-navy border border-academic-gold flex items-center justify-center rounded-full">
-                  <span className="font-serif-academic font-bold text-xs text-academic-gold">JU</span>
-                </div>
-                <span className="font-serif-academic font-bold tracking-wider text-white text-sm">JAMMU UNIVERSITY</span>
+              <p className="max-w-sm text-sm leading-7 text-slate-300">
+                A premium digital gateway for learning, research, academic records and university services.
+              </p>
+              <div className="mt-6 flex gap-3">
+                <a href="mailto:coe@jammuuniversity.ac.in" aria-label="Email university" className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 transition hover:bg-white/10">
+                  <Mail className="h-5 w-5" />
+                </a>
+                <a href="tel:+911912435243" aria-label="Call university" className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 transition hover:bg-white/10">
+                  <Phone className="h-5 w-5" />
+                </a>
+                <a href="https://maps.google.com/?q=University%20of%20Jammu" target="_blank" rel="noreferrer" aria-label="Open university location" className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 transition hover:bg-white/10">
+                  <MapPin className="h-5 w-5" />
+                </a>
               </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Serving Jammu & Kashmir with educational excellence since 1969. Accredited with A+ status by NAAC, India.
-              </p>
             </div>
-
-            {/* Quick Links */}
             <div>
-              <h4 className="text-xs font-bold text-white uppercase tracking-widest font-serif-academic mb-4">Quick Links</h4>
-              <ul className="text-xs text-slate-400 space-y-2.5">
-                <li><Link to="/login/student" className="hover:text-academic-gold transition">Student Login</Link></li>
-                <li><Link to="/signup/student" className="hover:text-academic-gold transition">Student Registration</Link></li>
-                <li><Link to="/login/admin" className="hover:text-academic-gold transition">Admin Portal</Link></li>
-                <li><a href="#notices" className="hover:text-academic-gold transition">Notice Board</a></li>
-                <li><a href="#verify" className="hover:text-academic-gold transition">Verify Results</a></li>
-              </ul>
+              <h3 className="mb-4 text-sm font-black">Portals</h3>
+              <div className="grid gap-3 text-sm text-slate-300">
+                <Link to="/login/student">Student Login</Link>
+                <Link to="/signup/student">Student Registration</Link>
+                <Link to="/login/admin">Admin Portal</Link>
+                <Link to="/results">Results</Link>
+              </div>
             </div>
-
-            {/* Contact */}
             <div>
-              <h4 className="text-xs font-bold text-white uppercase tracking-widest font-serif-academic mb-4">Academic Offices</h4>
-              <ul className="text-xs text-slate-400 space-y-3">
-                <li className="flex items-start gap-2">
-                  {Icons.phone}
-                  <span>Administration: +91 191 243 5243</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  {Icons.mail}
-                  <span>coe@jammuuniversity.ac.in</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  {Icons.mail}
-                  <span>helpdesk@jammuuniversity.ac.in</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  {Icons.location}
-                  <span>Baba Saheb Ambedkar Rd, Jammu</span>
-                </li>
-              </ul>
+              <h3 className="mb-4 text-sm font-black">University</h3>
+              <div className="grid gap-3 text-sm text-slate-300">
+                <Link to="/academics">Academics</Link>
+                <Link to="/about">About University</Link>
+                <Link to="/placements">Placements</Link>
+                <Link to="/campus-life">Campus Gallery</Link>
+              </div>
             </div>
-
-            {/* Disclaimer */}
             <div>
-              <h4 className="text-xs font-bold text-white uppercase tracking-widest font-serif-academic mb-4">Disclaimer</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                This dashboard is a fully functional, production-ready system integrated with MongoDB for student management, examinations, and academic records.
-              </p>
-              <div className="mt-4 p-3 rounded-xl bg-white/5 border border-slate-800">
-                <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                  {Icons.secure}
-                  <span>256-bit SSL Encryption • JWT Auth</span>
-                </div>
+              <h3 className="mb-4 text-sm font-black">Contact</h3>
+              <div className="grid gap-3 text-sm text-slate-300">
+                <a href="tel:+911912435243" className="flex gap-2"><Phone className="h-4 w-4 text-cyan-300" /> +91 191 243 5243</a>
+                <a href="mailto:coe@jammuuniversity.ac.in" className="flex gap-2"><Mail className="h-4 w-4 text-cyan-300" /> coe@jammuuniversity.ac.in</a>
+                <a href="https://maps.google.com/?q=University%20of%20Jammu" target="_blank" rel="noreferrer" className="flex gap-2"><MapPin className="h-4 w-4 text-cyan-300" /> Baba Saheb Ambedkar Rd, Jammu</a>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Copyright */}
-        <div className="border-t border-slate-800/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500">
-            <span>© {new Date().getFullYear()} University of Jammu. All Rights Reserved.</span>
-            <span className="mt-2 md:mt-0">Built for academic excellence and modern governance.</span>
+          <div className="mx-auto mt-12 flex max-w-7xl flex-col justify-between gap-3 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row">
+            <span>Copyright {new Date().getFullYear()} University of Jammu. All rights reserved.</span>
+            <span>Designed for academic excellence and modern governance.</span>
           </div>
-        </div>
-      </footer>
+          <p className="mx-auto mt-4 max-w-7xl text-xs font-semibold text-slate-500">
+            Designed and developed by Kanav Arora.
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

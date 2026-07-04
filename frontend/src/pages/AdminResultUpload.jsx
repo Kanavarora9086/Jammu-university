@@ -45,7 +45,7 @@ export function AdminResultUpload() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
         <div className="bg-slate-950/60 backdrop-blur-xl py-8 px-4 border border-slate-800 shadow-2xl rounded-2xl sm:px-10 space-y-6">
           
-          <div className="rounded-xl border border-slate-850 bg-slate-900/40 p-5">
+          <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
             <h4 className="text-sm font-bold text-white font-serif-academic">Expected Excel Columns</h4>
             <p className="text-xs text-slate-400 mt-2 leading-relaxed">
               Ensure your Excel template has exactly these columns (one subject grade record per row):
@@ -60,7 +60,7 @@ export function AdminResultUpload() {
               type="file"
               accept=".xlsx,.xls"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
-              className="block w-full text-xs text-slate-350 file:mr-4 file:rounded-lg file:border-0 file:bg-academic-gold file:px-4 file:py-2 file:text-xs file:font-semibold file:text-academic-navy hover:file:bg-academic-goldhover cursor-pointer"
+              className="block w-full text-xs text-slate-300 file:mr-4 file:rounded-lg file:border-0 file:bg-academic-gold file:px-4 file:py-2 file:text-xs file:font-semibold file:text-academic-navy hover:file:bg-academic-goldhover cursor-pointer"
             />
 
             {error && (
@@ -70,7 +70,7 @@ export function AdminResultUpload() {
             )}
 
             {result && (
-              <div className="rounded-lg border border-emerald-900 bg-emerald-950/30 p-3 text-xs text-emerald-250">
+              <div className="rounded-lg border border-emerald-900 bg-emerald-950/30 p-3 text-xs text-emerald-200">
                 Successfully Uploaded! Rows Parsed: <span className="font-bold text-white">{result.rows}</span>, Grade Cards Affected:{" "}
                 <span className="font-bold text-white">{result.resultDocumentsTouched}</span>
               </div>
@@ -85,7 +85,7 @@ export function AdminResultUpload() {
               </button>
               <Link
                 to="/admin"
-                className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-850 flex items-center justify-center text-slate-300"
+                className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-800 flex items-center justify-center text-slate-300"
               >
                 Back to Dashboard
               </Link>
@@ -96,3 +96,4 @@ export function AdminResultUpload() {
     </div>
   );
 }
+

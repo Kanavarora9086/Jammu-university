@@ -33,7 +33,6 @@ adminResultsRouter.post(
       const sheet = wb.Sheets[sheetName];
       const rows = xlsx.utils.sheet_to_json(sheet, { defval: "" });
 
-      console.log("ROWS =>", rows);
 
       const rowSchema = z.object({
         rollNumber: z.coerce.string().min(1),
@@ -109,7 +108,6 @@ adminResultsRouter.post(
         }
       });
     } catch (err) {
-      console.log("UPLOAD ERROR =>", err);
       next(err);
     }
   }

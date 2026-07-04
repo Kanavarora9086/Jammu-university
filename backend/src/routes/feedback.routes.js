@@ -1,7 +1,8 @@
-import express from "express";
+import { Router } from "express";
 import { Feedback } from "../models/feedback.model.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 
-const router = express.Router();
+export const feedbackRouter = Router();
 
 // Helper function for naive sentiment analysis based on rating
 function analyzeSentiment(rating) {
@@ -11,31 +12,28 @@ function analyzeSentiment(rating) {
 }
 
 // Submit feedback (public endpoint)
-router.post("/", async (req, res) => {
+feedbackRouter.post("/", async (req, res) => {
   try {
     const { name, email, rating, message } = req.body;
     if (!rating || !message) {
-      return res.status(400).json({ error: "Rating and message are required" });
+      return res.status(400).json({ ok: false, error: { message: "Rating and message are required" } });
     }
-    const sentiment = analyzeSentiment(rating);
-    const feedback = await Feedback.create({ name, email, rating, message, sentiment });
-    return res.status(201).json({ data: feedback });
+    const sentiment = analyzeSentiment(Number(rating));
+    const feedback = await Feedback.create({ name, email, rating: Number(rating), message, sentiment });
+    return res.status(201).json({ ok: true, data: feedback });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Failed to submit feedback" });
+    return res.status(500).json({ ok: false, error: { message: "Failed to submit feedback" } });
   }
 });
 
-// Admin: Get all feedback (protected, admin only)
-router.get("/", async (req, res) => {
+// Admin: Get all feedback (protected — admin only)
+feedbackRouter.get("/", requireAuth, requireRole(["admin"]), async (req, res) => {
   try {
-    // Assuming admin auth middleware has set req.user.role === "admin"
     const feedbacks = await Feedback.find().sort({ createdAt: -1 }).lean();
-    return res.json({ data: feedbacks });
+    return res.json({ ok: true, data: feedbacks });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Failed to fetch feedback" });
+    return res.status(500).json({ ok: false, error: { message: "Failed to fetch feedback" } });
   }
 });
-
-export default router;

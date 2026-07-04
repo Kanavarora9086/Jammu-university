@@ -15,6 +15,7 @@ import { studentResultsRouter } from "./routes/student.results.routes.js";
 import { noticesRouter } from "./routes/notices.routes.js";
 import { attendanceRouter } from "./routes/attendance.routes.js";
 import { assignmentRouter } from "./routes/assignment.routes.js";
+import { feedbackRouter } from "./routes/feedback.routes.js";
 
 export const app = express();
 
@@ -47,6 +48,7 @@ app.use("/api/student/results", studentResultsRouter);
 app.use("/api/notices", noticesRouter);
 app.use("/api/attendance", attendanceRouter);
 app.use("/api/assignments", assignmentRouter);
+app.use("/api/feedback", feedbackRouter);
 
 // serve uploaded images (profile photos)
 app.use("/uploads", express.static(path.resolve(env.UPLOAD_DIR)));

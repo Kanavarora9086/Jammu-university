@@ -383,7 +383,7 @@ export function AdminDashboard() {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer ${
                   activeTab === tab.id
                     ? "bg-academic-gold text-academic-navy shadow-md shadow-academic-gold/10"
-                    : "text-slate-350 hover:bg-slate-900/60 hover:text-white"
+                    : "text-slate-300 hover:bg-slate-900/60 hover:text-white"
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -445,7 +445,7 @@ export function AdminDashboard() {
 
             {/* ADD STUDENT FORM */}
             {showAddForm && (
-              <form onSubmit={handleAddStudent} className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl grid md:grid-cols-3 gap-4">
+              <form onSubmit={handleAddStudent} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl grid md:grid-cols-3 gap-4">
                 <div className="md:col-span-3 pb-2 border-b border-slate-900">
                   <h4 className="text-sm font-bold text-white font-serif-academic">Register Student Record</h4>
                 </div>
@@ -529,7 +529,7 @@ export function AdminDashboard() {
 
             {/* EDIT STUDENT MODAL/SECTION */}
             {editingStudent && (
-              <form onSubmit={handleEditStudent} className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl grid md:grid-cols-2 gap-4">
+              <form onSubmit={handleEditStudent} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl grid md:grid-cols-2 gap-4">
                 <div className="md:col-span-2 pb-2 border-b border-slate-900 flex justify-between items-center">
                   <h4 className="text-sm font-bold text-white font-serif-academic">Edit Student Profile ({editingStudent.rollNumber})</h4>
                   <button type="button" onClick={() => setEditingStudent(null)} className="text-xs text-slate-400 hover:text-white">Cancel</button>
@@ -588,7 +588,7 @@ export function AdminDashboard() {
             )}
 
             {/* STUDENTS DIRECTORY TABLE */}
-            <div className="bg-slate-950 border border-slate-850 rounded-2xl shadow-xl overflow-hidden">
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
               {loading ? (
                 <div className="p-8 text-center text-slate-400 text-sm">Querying database...</div>
               ) : students.length === 0 ? (
@@ -646,20 +646,20 @@ export function AdminDashboard() {
               <h3 className="text-2xl font-bold font-serif-academic text-white">Excel Results Portal</h3>
             </div>
 
-            <div className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+            <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
               <h4 className="text-sm font-bold text-white font-serif-academic">Expected Sheet Layout</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Upload result tables in `.xlsx` format. Each row represents a single subject mark record:
               </p>
-              <div className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 font-mono text-[11px] text-slate-350">
+              <div className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 font-mono text-[11px] text-slate-300">
                 rollNumber, semester, subjectCode, subjectName, credits, marks
               </div>
-              <p className="text-[10px] text-slate-450 italic mt-1 leading-relaxed">
+              <p className="text-[10px] text-slate-400 italic mt-1 leading-relaxed">
                 💡 E.g. Row: <code className="text-slate-300">22CS001, 1, CSC101, Data Structures, 4, 88</code>
               </p>
             </div>
 
-            <form onSubmit={handleExcelUpload} className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+            <form onSubmit={handleExcelUpload} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
               <input
                 type="file"
                 accept=".xlsx,.xls"
@@ -698,7 +698,7 @@ export function AdminDashboard() {
             <div className="grid md:grid-cols-3 gap-6">
               
               {/* Select Student Selector */}
-              <div className="md:col-span-1 bg-slate-950 border border-slate-850 p-5 rounded-2xl shadow-xl space-y-4">
+              <div className="md:col-span-1 bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-white border-b border-slate-900 pb-2">Select Student</h4>
                 <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                   {students.map((st) => (
@@ -711,7 +711,7 @@ export function AdminDashboard() {
                       className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold border transition ${
                         activeStudentRoll === st.rollNumber
                           ? "bg-academic-gold border-academic-gold text-academic-navy"
-                          : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-850"
+                          : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
                       }`}
                     >
                       <div className="truncate">{st.name}</div>
@@ -728,7 +728,7 @@ export function AdminDashboard() {
                 {activeStudentRoll ? (
                   <>
                     {/* Add/Upsert Form */}
-                    <form onSubmit={handleUpsertAttendance} className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl grid md:grid-cols-2 gap-4">
+                    <form onSubmit={handleUpsertAttendance} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl grid md:grid-cols-2 gap-4">
                       <div className="md:col-span-2 pb-2 border-b border-slate-900">
                         <h4 className="text-sm font-bold text-white font-serif-academic">Update Subject Logs for {activeStudentRoll}</h4>
                       </div>
@@ -787,7 +787,7 @@ export function AdminDashboard() {
                     </form>
 
                     {/* Display existing records */}
-                    <div className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+                    <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
                       <h4 className="text-sm font-bold text-white font-serif-academic border-b border-slate-900 pb-3">
                         Active Logs for {activeStudentRoll}
                       </h4>
@@ -798,10 +798,10 @@ export function AdminDashboard() {
                           {studentAttendance.map((att) => {
                             const perc = att.totalClasses === 0 ? 0 : Math.round((att.presentClasses / att.totalClasses) * 100);
                             return (
-                              <div key={att.subjectCode} className="flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-850 text-xs">
+                              <div key={att.subjectCode} className="flex justify-between items-center bg-slate-900 p-3 rounded-lg border border-slate-800 text-xs">
                                 <div>
                                   <p className="font-semibold text-white">{att.subjectName} ({att.subjectCode})</p>
-                                  <p className="text-slate-405 mt-0.5">Lectures: {att.presentClasses} of {att.totalClasses} ({perc}%)</p>
+                                  <p className="text-slate-400 mt-0.5">Lectures: {att.presentClasses} of {att.totalClasses} ({perc}%)</p>
                                 </div>
                                 <button
                                   onClick={() => handleDeleteAttendance(att.subjectCode)}
@@ -817,7 +817,7 @@ export function AdminDashboard() {
                     </div>
                   </>
                 ) : (
-                  <div className="bg-slate-950 border border-slate-850 p-10 rounded-2xl text-center text-slate-400 text-sm">
+                  <div className="bg-slate-950 border border-slate-800 p-10 rounded-2xl text-center text-slate-400 text-sm">
                     Select a student from the registry sidebar to view/manage attendance.
                   </div>
                 )}
@@ -837,7 +837,7 @@ export function AdminDashboard() {
             <div className="grid md:grid-cols-3 gap-6">
               
               {/* Select Student Selector */}
-              <div className="md:col-span-1 bg-slate-950 border border-slate-850 p-5 rounded-2xl shadow-xl space-y-4">
+              <div className="md:col-span-1 bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-white border-b border-slate-900 pb-2">Select Student</h4>
                 <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                   {students.map((st) => (
@@ -850,7 +850,7 @@ export function AdminDashboard() {
                       className={`w-full text-left px-3 py-2.5 rounded-lg text-xs font-semibold border transition ${
                         activeStudentRoll === st.rollNumber
                           ? "bg-academic-gold border-academic-gold text-academic-navy"
-                          : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-850"
+                          : "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
                       }`}
                     >
                       <div className="truncate">{st.name}</div>
@@ -867,7 +867,7 @@ export function AdminDashboard() {
                 {activeStudentRoll ? (
                   <>
                     {/* Add Assignment form */}
-                    <form onSubmit={handleIssueAssignment} className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl grid md:grid-cols-2 gap-4">
+                    <form onSubmit={handleIssueAssignment} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl grid md:grid-cols-2 gap-4">
                       <div className="md:col-span-2 pb-2 border-b border-slate-900">
                         <h4 className="text-sm font-bold text-white font-serif-academic">Issue Assignment to {activeStudentRoll}</h4>
                       </div>
@@ -937,7 +937,7 @@ export function AdminDashboard() {
 
                     {/* Grading Form Modal/View if selected */}
                     {gradingForm.assignmentId && (
-                      <form onSubmit={handleGradeSubmission} className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl flex items-end gap-4">
+                      <form onSubmit={handleGradeSubmission} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl flex items-end gap-4">
                         <div className="flex-1">
                           <label className="text-xs font-semibold text-slate-400 block mb-1">Grade Marks Obtained</label>
                           <input
@@ -968,7 +968,7 @@ export function AdminDashboard() {
                     )}
 
                     {/* Display existing assignments */}
-                    <div className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+                    <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
                       <h4 className="text-sm font-bold text-white font-serif-academic border-b border-slate-900 pb-3">
                         Assignments Issued to {activeStudentRoll}
                       </h4>
@@ -977,7 +977,7 @@ export function AdminDashboard() {
                       ) : (
                         <div className="space-y-4">
                           {studentAssignments.map((asg) => (
-                            <div key={asg._id} className="bg-slate-900 p-4 rounded-xl border border-slate-850 text-xs flex flex-col md:flex-row justify-between gap-4">
+                            <div key={asg._id} className="bg-slate-900 p-4 rounded-xl border border-slate-800 text-xs flex flex-col md:flex-row justify-between gap-4">
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                   <p className="font-bold text-white">{asg.title}</p>
@@ -1025,7 +1025,7 @@ export function AdminDashboard() {
                     </div>
                   </>
                 ) : (
-                  <div className="bg-slate-950 border border-slate-850 p-10 rounded-2xl text-center text-slate-400 text-sm">
+                  <div className="bg-slate-950 border border-slate-800 p-10 rounded-2xl text-center text-slate-400 text-sm">
                     Select a student from the registry sidebar to view/manage assignments.
                   </div>
                 )}
@@ -1043,7 +1043,7 @@ export function AdminDashboard() {
             </div>
 
             {/* Create notice form */}
-            <form onSubmit={handleCreateNotice} className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+            <form onSubmit={handleCreateNotice} className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
               <h4 className="text-sm font-bold text-white font-serif-academic border-b border-slate-900 pb-2">Publish New Announcement</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
@@ -1092,7 +1092,7 @@ export function AdminDashboard() {
             </form>
 
             {/* Display active notices */}
-            <div className="bg-slate-950 border border-slate-850 p-6 rounded-2xl shadow-xl space-y-4">
+            <div className="bg-slate-950 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
               <h4 className="text-sm font-bold text-white font-serif-academic border-b border-slate-900 pb-3">
                 Active Announcements Circular Directory
               </h4>
@@ -1101,11 +1101,11 @@ export function AdminDashboard() {
               ) : (
                 <div className="space-y-4">
                   {notices.map((n) => (
-                    <div key={n._id} className="bg-slate-900 p-4 rounded-xl border border-slate-850 text-xs flex justify-between gap-4">
+                    <div key={n._id} className="bg-slate-900 p-4 rounded-xl border border-slate-800 text-xs flex justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-bold text-white">{n.title}</span>
-                          <span className="bg-slate-950 border border-slate-850 px-1.5 py-0.5 rounded text-[8px] font-bold text-academic-gold uppercase tracking-wider">
+                          <span className="bg-slate-950 border border-slate-800 px-1.5 py-0.5 rounded text-[8px] font-bold text-academic-gold uppercase tracking-wider">
                             Audience: {n.audience}
                           </span>
                         </div>
@@ -1132,3 +1132,4 @@ export function AdminDashboard() {
     </div>
   );
 }
+
